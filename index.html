@@ -6,12 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
     <title>Todo App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Dosis:wght@200;400&display=swap" rel="stylesheet">
   </head>
   <body>
     <div class="container">
       <h1>To-do list!</h1>
       <section>
-        <p>Declutter your mind by listing your todos...</p>
+        <p id="text-over-input">Declutter your mind by listing your todos...</p>
         <form id="create-form">
           <input id="title-input" placeholder="Title" required/>
           <input id="description-input" placeholder="Description"/>
@@ -19,13 +22,13 @@
         </form>
       </section>
       <main>
-        <section>
+        <section id="section-finished">
           <h3>Unfinished</h3>
-          <ul id="unfinished-list"></ul>
+          <ul id="todo-list"></ul>
         </section>
         <section>
-          <h3>Finished</h3>
-          <ul id="finished-list"></ul>
+          <h3 id="title-finished">Finished</h3>
+          <ul id="completed-list"></ul>
         </section>
       </main>
     </div>

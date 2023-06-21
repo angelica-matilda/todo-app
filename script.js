@@ -1,6 +1,6 @@
 // Global variables
-const unfinishedListElement = document.getElementById("unfinished-list");
-const finishedListElement = document.getElementById("finished-list");
+const todoListElement = document.getElementById("todo-list");
+const completedListElement = document.getElementById("completed-list");
 const createForm = document.getElementById("create-form");
 const titleInput = document.getElementById("title-input");
 const descriptionInput = document.getElementById("description-input");
@@ -30,8 +30,8 @@ createForm.addEventListener("submit", (event) => {
 // Function to render the todos on the page
 function renderTodos(todos) {
   // Clear the existing todo and completed lists
-  unfinishedListElement.innerHTML = "";
-  finishedListElement.innerHTML = "";
+  todoListElement.innerHTML = "";
+  completedListElement.innerHTML = "";
 
   // Iterate through each todo and create corresponding elements
   for (let todo of todos) {
@@ -39,9 +39,9 @@ function renderTodos(todos) {
 
     // Append the element to the lists based on completion status
     if (todo.completed) {
-      finishedListElement.append(element);
+      completedListElement.append(element);
     } else {
-      unfinishedListElement.append(element);
+      todoListElement.append(element);
     }
   }
 }
@@ -56,45 +56,50 @@ function createTodoElement(todo) {
   let description = document.createElement("p");
   let createdDate = document.createElement("p");
   let completedDate = document.createElement("p");
-  let completed = document.createElement("input");
+  let completeBtn = document.createElement("button");
   let removeBtn = document.createElement("button");
 
   // Set attributes and content for the created elements
-  completed.type = "checkbox";
   title.innerText = todo.title;
   description.innerText = todo.description;
-  completed.checked = todo.completed;
-  removeBtn.innerText = "Delete";
 
-  // Check if the todo is completed and update the completed date accordingly
+  const displayDate = new Date().toLocaleString();
+
   if (todo.completed) {
-    completedDate.innerText = "Completed: " + new Date().toLocaleString();
+    completedDate.innerText = "Completed: " + displayDate;
+    createdDate.style.display = "none"; // Hide the created date for completed todos
+
+    // Show only the delete button for completed todos
+    removeBtn.innerText = "Delete";
+    removeBtn.addEventListener("click", () => {
+      removeTodo(todo, todos, () => {
+        renderTodos(todos);
+      });
+    });
+
+    // Hide the complete button for completed todos
+    completeBtn.style.display = "none";
   } else {
-    createdDate.innerText = "Created: " + new Date().toLocaleString();
+    createdDate.innerText = "Created: " + displayDate;
+    completedDate.style.display = "none"; // Hide the completed date for unfinished todos
+
+    completeBtn.innerText = "Complete";
+    completeBtn.addEventListener("click", () => {
+      updateTodoStatus(todo, todos, () => {
+        renderTodos(todos); // Render the updated todos list after the status is updated
+      });
+    });
+
+    removeBtn.innerText = "Delete";
+    removeBtn.addEventListener("click", () => {
+      removeTodo(todo, todos, () => {
+        renderTodos(todos);
+      });
+    });
   }
 
-  // Add event listener for the checkbox
-  completed.addEventListener("change", (event) => {
-    todo.completed = event.target.checked;
-    // Update the completed date display based on the checkbox status
-    if (todo.completed) {
-      completedDate.innerText = "Completed: " + new Date().toLocaleString();
-    } else {
-      completedDate.innerText = "";
-    }
-    // Render the updated todos list
-    renderTodos(todos);
-  });
-
-  // Add event listener for the remove button
-  removeBtn.addEventListener("click", () => {
-    removeTodo(todo, todos, () => {
-      renderTodos(todos);
-    });
-  });
-
   // Append the created elements to the article
-  article.append(title, description, createdDate, completedDate, completed, removeBtn);
+  article.append(title, description, createdDate, completedDate, completeBtn, removeBtn);
 
   // Append the article to the list item
   li.append(article);
@@ -151,11 +156,21 @@ function updateTodoStatus(todo, todos, after) {
       completed: true,
     }),
   })
-    .then((res) => res.json())
-    .then((value) => {
-      if (value.success) {
-        todo.completed = true;
-        after();
+    .then((res) => {
+      if (res.ok) {
+        return res.json();
+      } else {
+        throw new Error("Failed to update todo status.");
       }
+    })
+    .then((value) => {
+      // Assuming the server response returns the updated todo
+      // You can modify this part based on the actual response structure
+      todo.completed = value.completed; // Update the todo status
+      after(); // Call the callback function
+    })
+    .catch((error) => {
+      console.log(error);
+      // Handle the error here if necessary
     });
 }
